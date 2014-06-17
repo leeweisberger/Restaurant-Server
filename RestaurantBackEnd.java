@@ -104,7 +104,7 @@ public class RestaurantBackEnd {
 		return -1;
 	}
 	
-	public ArrayList<String[]> update(int code) {//10 for new, 20 for all
+	public ArrayList<String[]> update(int code) {//10 for new, 20 for all, 40 for old
 		try {
 			ArrayList<String[]> result = new ArrayList<String[]>();
 			

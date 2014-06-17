@@ -120,6 +120,19 @@ public class ServerMain extends Thread{
 				String update = "INSERT INTO special_offers VALUES '" + offer +"'";
 				manager.update(update);
 				return 0;
+			} else if(code == 40) {	//Get only old orders
+				String query = "SELECT * FROM Orders WHERE read = 1";
+				 ResultSet result = manager.query(query);
+				 ResultSetMetaData data = result.getMetaData();
+				 int numCol = data.getColumnCount();
+				 dos.writeInt(numCol);
+				 while(result.next()) {
+					 for(int i=0; i<numCol; i++) {
+						 dos.writeUTF(result.getString(i));
+					 }
+				 }
+				 dos.writeUTF("done");	//Done writing data
+				 return 0;
 			}
 		} catch(IOException e) {
 			System.err.println("Could not read code from resuraunt");
@@ -186,7 +199,7 @@ public class ServerMain extends Thread{
 				System.err.println("Failed to query database");
 				e.printStackTrace();
 			} catch (IOException e) {
-				System.err.println("Failed to write to client");
+				System.err.println("Failed to write to mobile client");
 				e.printStackTrace();
 			}
 		}

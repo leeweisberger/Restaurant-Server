@@ -3,6 +3,8 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -46,11 +48,19 @@ public class GUI extends JFrame {
 	public GUI() throws IOException {
 		super("Restaurant GUI");
 		setSize(200, 600);
-		setDefaultCloseOperation(EXIT_ON_CLOSE);
+		defineClosingBehavior();
 		backEnd = new RestaurantBackEnd();	//TODO need server info
 		createGUI();
 		pack();
 		setVisible(true);
+	}
+
+	protected void defineClosingBehavior() {
+		this.addWindowListener(new WindowAdapter(){
+			public void windowClosing(WindowEvent e) {
+	          GUI.this.dispose();
+	        }	
+		});
 	}
 
 	public void createGUI() throws IOException {	
@@ -60,6 +70,7 @@ public class GUI extends JFrame {
 		initDeleteButton();
 		
 		initMenu();
+		
 		
 	}
 
@@ -127,6 +138,9 @@ public class GUI extends JFrame {
 		for(String order : getOrders(backEnd.update(10))){	//TODO Determine whether to update or get all orders
 			model.addElement(order);
 		}
+//		for(String order : (readFile(file))){
+//			model.addElement(order);
+//		}
 		jList = new JList<>(model);
 		
 		jList.setCellRenderer(new JlistRenderer());

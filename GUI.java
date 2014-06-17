@@ -76,7 +76,10 @@ public class GUI extends JFrame {
 					Date date = new Date();
 					File file = new File(System.getProperty("user.home")+System.lineSeparator()+"Orders from " + df.format(date)+".txt");
 					PrintWriter writer = new PrintWriter(file, "UTF-8");
-					writer.println("testtestest"); //TODO: Add Relevant tests to file
+					String[] oldOrders = getOrders(backEnd.update(40));
+					for(int i=0; i<oldOrders.length; i++) {
+						writer.println(oldOrders[i]); 
+					}
 					writer.close();
 					JOptionPane.showMessageDialog(GUI.this, "Successfully wrote to File!");
 				} catch (FileNotFoundException | UnsupportedEncodingException e1) {
@@ -94,6 +97,8 @@ public class GUI extends JFrame {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				specialOffer = (String)JOptionPane.showInputDialog(GUI.this, "Add New Special Offer");
+				int status = backEnd.sendOffer(specialOffer);
+				//TODO add dialogue box upon failure. A negative value indicates failure
 			}		
 		});
 		options.add(pastOrders);
@@ -125,7 +130,7 @@ public class GUI extends JFrame {
 	private JList<String> initJList(File file) throws IOException {
 		DefaultListModel<String> model = new DefaultListModel<String>();
 		for(String order : getOrders(backEnd.update(10))){	//TODO Determine whether to update or get all orders
-			model.addElement(order);
+			model.addElement(order);						//10 for new, 20 for all
 		}
 		jList = new JList<>(model);
 		
@@ -136,7 +141,6 @@ public class GUI extends JFrame {
 		jList.setVisible(true);
 		jList.addListSelectionListener(new ListSelectionListener() {
 
-			@Override
 			public void valueChanged(ListSelectionEvent e) {
 				if(jList.getSelectedIndex()==-1 || jList.getSelectedValue().equals(JlistRenderer.SEPARATOR)){
 					deleteButton.setEnabled(false);

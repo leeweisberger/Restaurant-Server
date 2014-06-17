@@ -5,9 +5,15 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import javax.swing.BorderFactory;
@@ -16,6 +22,10 @@ import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
@@ -29,23 +39,67 @@ public class GUI extends JFrame {
 	private JButton deleteButton;
 	private int selectedIndex=-1;
 	private JList<String> jList;
-	
 	private RestaurantBackEnd backEnd;
-
+	private String specialOffer="";
+	
+	
 	public GUI() throws IOException {
 		super("Restaurant GUI");
 		setSize(200, 600);
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 		backEnd = new RestaurantBackEnd();	//TODO need server info
 		createGUI();
+		pack();
 		setVisible(true);
 	}
 
 	public void createGUI() throws IOException {	
-		File file = new File("C:/Users/Lee/Documents/orderTest.txt");		
+		File file = new File("/Users/lw033589/Documents/Orders.txt");		
 		JList<String> jList = initJList(file);
 		initScrollPane(jList);		
 		initDeleteButton();
+		
+		initMenu();
+		
+	}
+
+	protected void initMenu() {
+		JMenuBar menuBar = new JMenuBar();
+		JMenu options = new JMenu("Options");
+		JMenuItem pastOrders = new JMenuItem("Past Orders");
+		pastOrders.addActionListener(new ActionListener(){
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				
+				try {
+					DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+					Date date = new Date();
+					File file = new File(System.getProperty("user.home")+System.lineSeparator()+"Orders from " + df.format(date)+".txt");
+					PrintWriter writer = new PrintWriter(file, "UTF-8");
+					writer.println("testtestest"); //TODO: Add Relevant tests to file
+					writer.close();
+					JOptionPane.showMessageDialog(GUI.this, "Successfully wrote to File!");
+				} catch (FileNotFoundException | UnsupportedEncodingException e1) {
+					e1.printStackTrace();
+					JOptionPane.showMessageDialog(GUI.this,
+						    "Could Not Write to File",
+						    "ERROR",
+						    JOptionPane.ERROR_MESSAGE);
+				}
+			}			
+		});
+		JMenuItem offers = new JMenuItem("Add Offer");
+		offers.addActionListener(new ActionListener(){
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				specialOffer = (String)JOptionPane.showInputDialog(GUI.this, "Add New Special Offer");
+			}		
+		});
+		options.add(pastOrders);
+		options.add(offers);
+		menuBar.add(options);
+		setJMenuBar(menuBar);
 	}
 
 	private void initDeleteButton() {

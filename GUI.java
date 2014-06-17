@@ -70,7 +70,7 @@ public class GUI extends JFrame {
 
 	private JList<String> initJList(File file) throws IOException {
 		DefaultListModel<String> model = new DefaultListModel<String>();
-		for(String order : getOrders(backEnd.update(10))){	//TODO
+		for(String order : getOrders(backEnd.update(10))){	//TODO Determine whether to update or get all orders
 			model.addElement(order);
 		}
 		jList = new JList<>(model);

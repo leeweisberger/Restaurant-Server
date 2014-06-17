@@ -22,7 +22,7 @@ public class RestaurantBackEnd {
 		int status = connectToServer();
 		
 		if(status == -1) 
-			throw new IOException();
+			throw new IOException("Could not connect/communicate with server");
 		
 		} catch(IOException e) {
 			System.err.println("Could not connect to server");
@@ -39,7 +39,7 @@ public class RestaurantBackEnd {
 			int status = connectToServer();
 			
 			if(status == -1) 
-				throw new IOException();
+				throw new IOException("Could not connect/communicate with server");
 			
 		} catch (IOException e) {
 			System.err.println("Could not connect to server");
@@ -56,7 +56,7 @@ public class RestaurantBackEnd {
 			int status = connectToServer();
 			
 			if(status == -1) 
-				throw new IOException();
+				throw new IOException("Could not connect/communicate with server");
 			
 		} catch(IOException e) {
 			System.err.println("Could not connect to server");
@@ -91,7 +91,7 @@ public class RestaurantBackEnd {
 	
 	private int connectToServer() {
 		try {
-			dos.writeInt(20);
+			dos.writeInt(20);	//Code to say that this is a restaurant connection
 			if(dis.readInt() == 20) {
 				return 0;
 			} else {
@@ -122,13 +122,31 @@ public class RestaurantBackEnd {
 				}
 				temp = dis.readUTF();
 			}
-			return result;
+			int status = dis.readInt();
+			if(status >= 0)
+				return result;
+			else 
+				return null;
 		}
 		 catch (IOException e) {
 			System.err.println("Unable to write/read to server");
 			e.printStackTrace();
 		}
 		return null;
+	}
+	
+	public int sendOffer(String offer) {
+		try {
+			dos.writeInt(30);	//Send special offer code
+			
+			dos.writeUTF(offer);
+			
+			return dis.readInt();
+		} catch (IOException e) {
+			System.err.println("Failed to red/write to server");
+			e.printStackTrace();
+		}
+		return -1;
 	}
 	//End class
 }

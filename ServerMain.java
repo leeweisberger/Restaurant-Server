@@ -32,6 +32,7 @@ public class ServerMain extends Thread{
 			is = clientSocket.getInputStream();
 			dis = new DataInputStream(is);
 		} catch (IOException e) {
+			System.err.println("Failed to construct new thread");
 			e.printStackTrace();
 		}
 		
@@ -53,6 +54,7 @@ public class ServerMain extends Thread{
 			}
 		} catch(IOException e) {
 			System.err.println("Could not write to client");
+			e.printStackTrace();
 		}
 		endConnection();
 	}
@@ -98,7 +100,6 @@ public class ServerMain extends Thread{
 						 dos.writeUTF(result.getString(i));
 					 }
 				 }
-				 
 				 dos.writeUTF("done");	//Done writing data
 				 return 0;
 			} else if(code == 20) {	//Read all data
@@ -112,9 +113,13 @@ public class ServerMain extends Thread{
 						 dos.writeUTF(result.getString(i));
 					 }
 				 }
-				 
 				 dos.writeUTF("done");	//Done writing data
 				 return 0;
+			} else if(code == 30) { //Get Special Offer
+				String offer = dis.readUTF();
+				String update = "INSERT INTO special_offers VALUES '" + offer +"'";
+				manager.update(update);
+				return 0;
 			}
 		} catch(IOException e) {
 			System.err.println("Could not read code from resuraunt");
@@ -129,36 +134,60 @@ public class ServerMain extends Thread{
 	}
 	
 	private int mobileConnect() {
-		boolean done = false;
-		while(!done) {
-			try {
-				String temp = dis.readUTF();
-				ArrayList<String> values = new ArrayList<String>();
-				if(temp != "done") {
-					values.add(temp);
-				} else {
-					String update = "";
-					update += "INSERT INTO orders VALUES (";
-					for(int i=0; i<values.size(); i++) {
-						if(i != values.size()-1) 
-							update += "'" + values.get(i) + "',";
-						else 
-							update += "'" + values.get(i) + "'";
+		int code = 0;
+		try {
+			code = dis.readInt();
+		} catch (IOException e1) {
+			System.err.println("Unable to communicate with mobile device");
+			e1.printStackTrace();
+		}
+		if(code == 10) {	//read order from mobile device
+			boolean done = false;
+			while(!done) {
+				try {
+					String temp = dis.readUTF();
+					ArrayList<String> values = new ArrayList<String>();
+					if(temp != "done") {
+						values.add(temp);
+					} else {
+						String update = "";
+						update += "INSERT INTO orders VALUES (";
+						for(int i=0; i<values.size(); i++) {
+							if(i != values.size()-1) 
+								update += "'" + values.get(i) + "',";
+							else 
+								update += "'" + values.get(i) + "'";
+						}
+						update += ")";
+						manager.update(update);
+						done = true;
+						return 0;
 					}
-					update += ")";
-					manager.update(update);
-					done = true;
-					return 0;
+					
+				} catch(IOException e) {
+					System.err.println("Error reading String!");
+					e.printStackTrace();
+					return -10;
+				} catch (SQLException e) {
+					System.err.println("Error updating database!");
+					e.printStackTrace();
+					return -20;
 				}
-				
-			} catch(IOException e) {
-				System.err.println("Error reading String!");
+			}
+		} else if(code == 20) {	//send mobile device special offers
+			try {
+				String query = "SELECT offers FROM special_offers WHERE valid=0";
+				ResultSet rs = manager.query(query);
+				while(rs.next()) {
+					dos.writeUTF(rs.getString("offers"));
+				}
+				dos.writeUTF("done");
+			} catch(SQLException e) {
+				System.err.println("Failed to query database");
 				e.printStackTrace();
-				return -10;
-			} catch (SQLException e) {
-				System.err.println("Error updating database!");
+			} catch (IOException e) {
+				System.err.println("Failed to write to client");
 				e.printStackTrace();
-				return -20;
 			}
 		}
 		return -1;
@@ -178,6 +207,7 @@ public class ServerMain extends Thread{
 				}
 			}
 		} catch (IOException e) {
+			System.err.println("Server failed");
 			e.printStackTrace();
 		}
 	

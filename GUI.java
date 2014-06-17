@@ -58,6 +58,7 @@ public class GUI extends JFrame {
 	protected void defineClosingBehavior() {
 		this.addWindowListener(new WindowAdapter(){
 			public void windowClosing(WindowEvent e) {
+			  backEnd.close();
 	          GUI.this.dispose();
 	        }	
 		});

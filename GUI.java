@@ -200,7 +200,7 @@ public class GUI extends JFrame {
 		for(int i=0; i<orders.size(); i++) {
 			String temp = "";
 			for(int j=0; j<orders.get(i).length; j++) {
-				temp += orders.get(i)[j];
+				temp += (orders.get(i)[j] + " ");
 			}
 			result.add(temp);
 		}

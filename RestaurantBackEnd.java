@@ -143,7 +143,7 @@ public class RestaurantBackEnd {
 			
 			return dis.readInt();
 		} catch (IOException e) {
-			System.err.println("Failed to red/write to server");
+			System.err.println("Failed to read/write to server");
 			e.printStackTrace();
 		}
 		return -1;

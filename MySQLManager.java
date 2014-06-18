@@ -20,12 +20,15 @@ public class MySQLManager {
 		ResultSet result;
 		Statement stmt = con.createStatement();
 		result = stmt.executeQuery(query);
+		stmt.close();
 		return result;
 	}
 	
 	public int update(String update) throws SQLException {
 		Statement stmt = con.createStatement();
-		return stmt.executeUpdate(update);
+		int result = stmt.executeUpdate(update);
+		stmt.close();
+		return result;
 	}
 	
 	public int getNumCols(String table) throws SQLException {
@@ -33,7 +36,13 @@ public class MySQLManager {
 		String query = "SELECT * FROM " + table;
 		ResultSet rs = stmt.executeQuery(query);
 		ResultSetMetaData meta = rs.getMetaData();
+		stmt.close();
+		rs.close();
 		return meta.getColumnCount();
+	}
+	
+	public void close() throws SQLException {
+		con.close();
 	}
 
 }

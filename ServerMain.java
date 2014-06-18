@@ -65,6 +65,7 @@ public class ServerMain extends Thread{
 			os.close();
 			dis.close();
 			is.close();
+			manager.close();
 			clientSocket.close();
 			synchronized(threadPool) {
 				sockets.remove(socketIndex);
@@ -72,6 +73,9 @@ public class ServerMain extends Thread{
 			}
 		} catch (IOException e) {
 			System.err.println("Failed to close streams");
+			e.printStackTrace();
+		} catch (SQLException e) {
+			System.err.println("Failed to close MySQLManager");
 			e.printStackTrace();
 		}
 	}
@@ -101,6 +105,7 @@ public class ServerMain extends Thread{
 					 }
 				 }
 				 dos.writeUTF("done");	//Done writing data
+				 result.close();
 				 return 0;
 			} else if(code == 20) {	//Read all data
 				 String query = "SELECT * FROM Orders";
@@ -114,6 +119,7 @@ public class ServerMain extends Thread{
 					 }
 				 }
 				 dos.writeUTF("done");	//Done writing data
+				 result.close();
 				 return 0;
 			} else if(code == 30) { //Get Special Offer
 				String offer = dis.readUTF();
@@ -132,6 +138,7 @@ public class ServerMain extends Thread{
 					 }
 				 }
 				 dos.writeUTF("done");	//Done writing data
+				 result.close();
 				 return 0;
 			}
 		} catch(IOException e) {
@@ -223,7 +230,7 @@ public class ServerMain extends Thread{
 			System.err.println("Server failed");
 			e.printStackTrace();
 		}
-	
+
 	}
 	
 }

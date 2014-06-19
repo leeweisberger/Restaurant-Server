@@ -95,31 +95,27 @@ public class ServerMain extends Thread{
 			int code = dis.readInt();
 			if(code == 10) {	//Only read new data
 				 String query = "SELECT * FROM Orders WHERE read=0";
-				 ResultSet result = manager.query(query);
-				 ResultSetMetaData data = result.getMetaData();
-				 int numCol = data.getColumnCount();
+				 ArrayList<String[]> result = manager.query(query);
+				 int numCol = result.get(0).length;
 				 dos.writeInt(numCol);
-				 while(result.next()) {
+				 for(int j=0; j<result.size(); j++) {
 					 for(int i=0; i<numCol; i++) {
-						 dos.writeUTF(result.getString(i));
+						 dos.writeUTF(result.get(j)[i]);
 					 }
 				 }
 				 dos.writeUTF("done");	//Done writing data
-				 result.close();
 				 return 0;
 			} else if(code == 20) {	//Read all data
 				 String query = "SELECT * FROM Orders";
-				 ResultSet result = manager.query(query);
-				 ResultSetMetaData data = result.getMetaData();
-				 int numCol = data.getColumnCount();
+				 ArrayList<String[]> result = manager.query(query);
+				 int numCol = result.get(0).length;
 				 dos.writeInt(numCol);
-				 while(result.next()) {
+				 for(int j=0; j<result.size(); j++) {
 					 for(int i=0; i<numCol; i++) {
-						 dos.writeUTF(result.getString(i));
+						 dos.writeUTF(result.get(j)[i]);
 					 }
 				 }
 				 dos.writeUTF("done");	//Done writing data
-				 result.close();
 				 return 0;
 			} else if(code == 30) { //Get Special Offer
 				String offer = dis.readUTF();
@@ -128,17 +124,15 @@ public class ServerMain extends Thread{
 				return 0;
 			} else if(code == 40) {	//Get only old orders
 				String query = "SELECT * FROM Orders WHERE read = 1";
-				 ResultSet result = manager.query(query);
-				 ResultSetMetaData data = result.getMetaData();
-				 int numCol = data.getColumnCount();
+				ArrayList<String[]> result = manager.query(query);
+				 int numCol = result.get(0).length;
 				 dos.writeInt(numCol);
-				 while(result.next()) {
+				 for(int j=0; j<result.size(); j++) {
 					 for(int i=0; i<numCol; i++) {
-						 dos.writeUTF(result.getString(i));
+						 dos.writeUTF(result.get(j)[i]);
 					 }
 				 }
 				 dos.writeUTF("done");	//Done writing data
-				 result.close();
 				 return 0;
 			}
 		} catch(IOException e) {
@@ -197,9 +191,9 @@ public class ServerMain extends Thread{
 		} else if(code == 20) {	//send mobile device special offers
 			try {
 				String query = "SELECT offers FROM special_offers WHERE valid=0";
-				ResultSet rs = manager.query(query);
-				while(rs.next()) {
-					dos.writeUTF(rs.getString("offers"));
+				ArrayList<String[]> rs = manager.query(query);
+				for(int i=0; i<rs.size(); i++) {
+					dos.writeUTF(rs.get(i)[0]);
 				}
 				dos.writeUTF("done");
 			} catch(SQLException e) {

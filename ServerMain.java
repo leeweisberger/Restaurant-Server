@@ -161,7 +161,7 @@ public class ServerMain extends Thread{
 				try {
 					String temp = dis.readUTF();
 					ArrayList<String> values = new ArrayList<String>();
-					if(temp != "done") {
+					if(!temp.equals( "done")) {
 						values.add(temp);
 					} else {
 						String update = "";

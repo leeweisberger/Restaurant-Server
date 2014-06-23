@@ -99,7 +99,7 @@ public class ServerMain extends Thread{
 		try {
 			int code = dis.readInt();
 			if(code == 10) {	//Only read new data
-				 String query = "SELECT * FROM Orders WHERE read=0";
+				 String query = "SELECT * FROM Orders WHERE Read_Flag = 0 AND TotalPrice IS NOT NULL";
 				 ArrayList<String[]> result = manager.query(query);
 				 int numCol = result.get(0).length;
 				 dos.writeInt(numCol);
@@ -128,7 +128,7 @@ public class ServerMain extends Thread{
 				manager.update(update);
 				return 0;
 			} else if(code == 40) {	//Get only old orders
-				String query = "SELECT * FROM Orders WHERE read = 1";
+				String query = "SELECT * FROM Orders WHERE Read_Flag = 1 AND TotalPrice IS NOT NULL";
 				ArrayList<String[]> result = manager.query(query);
 				 int numCol = result.get(0).length;
 				 dos.writeInt(numCol);
@@ -176,9 +176,9 @@ public class ServerMain extends Thread{
 							if(i != values.size()-1) 
 								update += "'" + values.get(i) + "',";
 							else 
-								update += "'" + values.get(i) + "'";
+								update += "'" + values.get(i) + "',";
 						}
-						update += ")";
+						update += "0)";
 						int status = manager.update(update);
 						System.out.println(status);
 						done = true;
@@ -197,7 +197,7 @@ public class ServerMain extends Thread{
 			}
 		} else if(code == 20) {	//send mobile device special offers
 			try {
-				String query = "SELECT offers FROM special_offers WHERE valid=0";
+				String query = "SELECT offers FROM special_offers WHERE valid=0 AND TotalPrice IS NOT NULL";
 				ArrayList<String[]> rs = manager.query(query);
 				for(int i=0; i<rs.size(); i++) {
 					dos.writeUTF(rs.get(i)[0]);

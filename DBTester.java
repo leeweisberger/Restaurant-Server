@@ -7,7 +7,7 @@ public class DBTester {
 		try {
 			Class.forName("com.mysql.jdbc.Driver");
 			MySQLManager manager = new MySQLManager("jdbc:mysql://localhost:3306/RestaurantDatabase", "root");
-			String query = "SELECT * FROM orders";
+			String query = "SELECT * FROM orders WHERE Read_Flag=0";
 			ArrayList<String[]> result = manager.query(query);
 			for(int i=0; i<result.size(); i++) {
 				for(int j=0; j<result.get(i).length; j++) {

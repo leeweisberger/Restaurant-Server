@@ -49,7 +49,7 @@ public class GUI extends JFrame {
 		super("Restaurant GUI");
 		setSize(200, 600);
 		defineClosingBehavior();
-		backEnd = new RestaurantBackEnd();	//TODO need server info
+		backEnd = new RestaurantBackEnd("134.193.112.95", 12345);	
 		createGUI();
 		pack();
 		setVisible(true);
@@ -65,7 +65,7 @@ public class GUI extends JFrame {
 	}
 
 	public void createGUI() throws IOException {	
-		File file = new File("/Users/lw033589/Documents/Orders.txt");		
+		File file = new File("Orders from 2014-06-17 14:46.txt");		
 		JList<String> jList = initJList(file);
 		initScrollPane(jList);		
 		initDeleteButton();

@@ -20,9 +20,9 @@ public class ServerMain extends Thread{
 	private int threadIndex;
 	private int socketIndex;
 	
-	MySQLManager manager = new MySQLManager(); //Need to give actual connection string
+	MySQLManager manager; 
 	
-	public ServerMain(Socket clientSocket, int threadIndex, int socketIndex) {
+	public ServerMain(Socket clientSocket, int threadIndex, int socketIndex) throws ClassNotFoundException {
 		this.threadIndex = threadIndex;
 		this.socketIndex = socketIndex;
 		try {
@@ -31,8 +31,13 @@ public class ServerMain extends Thread{
 			dos = new DataOutputStream(os);
 			is = clientSocket.getInputStream();
 			dis = new DataInputStream(is);
+			Class.forName("com.mysql.jdbc.Driver");
+			manager = new MySQLManager("jdbc:mysql://localhost:3306/RestaurantDatabase", "root");
 		} catch (IOException e) {
 			System.err.println("Failed to construct new thread");
+			e.printStackTrace();
+		} catch (SQLException e) {
+			System.err.println("Failed to connect to database");
 			e.printStackTrace();
 		}
 		
@@ -151,16 +156,17 @@ public class ServerMain extends Thread{
 		int code = 0;
 		try {
 			code = dis.readInt();
+			System.out.println(code);
 		} catch (IOException e1) {
 			System.err.println("Unable to communicate with mobile device");
 			e1.printStackTrace();
 		}
 		if(code == 10) {	//read order from mobile device
 			boolean done = false;
+			ArrayList<String> values = new ArrayList<String>();
 			while(!done) {
 				try {
 					String temp = dis.readUTF();
-					ArrayList<String> values = new ArrayList<String>();
 					if(!temp.equals( "done")) {
 						values.add(temp);
 					} else {
@@ -173,7 +179,8 @@ public class ServerMain extends Thread{
 								update += "'" + values.get(i) + "'";
 						}
 						update += ")";
-						manager.update(update);
+						int status = manager.update(update);
+						System.out.println(status);
 						done = true;
 						return 0;
 					}
@@ -196,18 +203,21 @@ public class ServerMain extends Thread{
 					dos.writeUTF(rs.get(i)[0]);
 				}
 				dos.writeUTF("done");
+				return 0;
 			} catch(SQLException e) {
 				System.err.println("Failed to query database");
 				e.printStackTrace();
+				return -10;
 			} catch (IOException e) {
 				System.err.println("Failed to write to mobile client");
 				e.printStackTrace();
+				return -20;
 			}
 		}
 		return -1;
 	}
 	
-	public static void main(String args[]) {
+	public static void main(String args[]) throws ClassNotFoundException {
 		try {
 			@SuppressWarnings("resource")
 			ServerSocket serverSocket = new ServerSocket(listenPort);

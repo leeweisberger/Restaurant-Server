@@ -17,6 +17,16 @@ public class MySQLManager {
 		con = DriverManager.getConnection(url);
 	}
 	
+	public MySQLManager(String url, String username, String password) throws SQLException{
+		String connectString = url + "?user=" + username + "&password=" + password;
+		con = DriverManager.getConnection(connectString);
+	}
+	
+	public MySQLManager(String url, String username) throws SQLException{
+		String connectString = url + "?user=" + username;
+		con = DriverManager.getConnection(connectString);
+	}
+	
 	public ArrayList<String[]> query(String query) throws SQLException{
 		ResultSet rs;
 		Statement stmt = con.createStatement();
@@ -35,15 +45,17 @@ public class MySQLManager {
 			while(rs.next()) {
 				result.add(new String[meta.getColumnCount()]);
 				for(int i=0; i<meta.getColumnCount() ; i++) {
-					result.get(j)[i] = rs.getString(i);
+					result.get(j)[i] = rs.getString(i+1);
 				}
 				j++;
 			}
 			rs.close();
+			return result;
 		} catch(SQLException e) {
 			System.err.println("Error reading result set");
 			e.printStackTrace();
 		}
+		System.err.println("returning null");
 		return null;
 	}
 

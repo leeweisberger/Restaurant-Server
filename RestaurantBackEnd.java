@@ -51,10 +51,10 @@ public class RestaurantBackEnd {
 		try {
 			this.address = InetAddress.getByName(address);
 			this.port = port;
-			socket = new Socket(this.address, port);
+			socket = new Socket();
+			socket.connect(new InetSocketAddress("134.193.112.95", 12345), 1000);
 			getStreams();
 			int status = connectToServer();
-			
 			if(status == -1) 
 				throw new IOException("Could not connect/communicate with server");
 			
@@ -107,7 +107,6 @@ public class RestaurantBackEnd {
 	public ArrayList<String[]> update(int code) {//10 for new, 20 for all, 40 for old
 		try {
 			ArrayList<String[]> result = new ArrayList<String[]>();
-			
 			dos.writeInt(code);	//Ask for update
 			int numCol = dis.readInt();
 			

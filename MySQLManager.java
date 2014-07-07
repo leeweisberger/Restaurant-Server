@@ -1,4 +1,5 @@
 import java.sql.*;
+import java.util.ArrayList;
 
 public class MySQLManager {
 	private Connection con;
@@ -16,16 +17,53 @@ public class MySQLManager {
 		con = DriverManager.getConnection(url);
 	}
 	
-	public ResultSet query(String query) throws SQLException{
-		ResultSet result;
+	public MySQLManager(String url, String username, String password) throws SQLException{
+		String connectString = url + "?user=" + username + "&password=" + password;
+		con = DriverManager.getConnection(connectString);
+	}
+	
+	public MySQLManager(String url, String username) throws SQLException{
+		String connectString = url + "?user=" + username;
+		con = DriverManager.getConnection(connectString);
+	}
+	
+	public ArrayList<String[]> query(String query) throws SQLException{
+		ResultSet rs;
 		Statement stmt = con.createStatement();
-		result = stmt.executeQuery(query);
+		rs = stmt.executeQuery(query);
+		ArrayList<String[]> result = getStrings(rs);
+		stmt.close();
 		return result;
 	}
 	
+	private ArrayList<String[]> getStrings(ResultSet rs) {
+		try {
+		ResultSetMetaData meta = rs.getMetaData();
+		ArrayList<String[]> result = new ArrayList<String[]>();
+		
+		int j = 0;
+			while(rs.next()) {
+				result.add(new String[meta.getColumnCount()]);
+				for(int i=0; i<meta.getColumnCount() ; i++) {
+					result.get(j)[i] = rs.getString(i+1);
+				}
+				j++;
+			}
+			rs.close();
+			return result;
+		} catch(SQLException e) {
+			System.err.println("Error reading result set");
+			e.printStackTrace();
+		}
+		System.err.println("returning null");
+		return null;
+	}
+
 	public int update(String update) throws SQLException {
 		Statement stmt = con.createStatement();
-		return stmt.executeUpdate(update);
+		int result = stmt.executeUpdate(update);
+		stmt.close();
+		return result;
 	}
 	
 	public int getNumCols(String table) throws SQLException {
@@ -33,7 +71,14 @@ public class MySQLManager {
 		String query = "SELECT * FROM " + table;
 		ResultSet rs = stmt.executeQuery(query);
 		ResultSetMetaData meta = rs.getMetaData();
-		return meta.getColumnCount();
+		int result = meta.getColumnCount();
+		stmt.close();
+		rs.close();
+		return result;
+	}
+	
+	public void close() throws SQLException {
+		con.close();
 	}
 
 }

@@ -20,9 +20,9 @@ public class ServerMain extends Thread{
 	private int threadIndex;
 	private int socketIndex;
 	
-	MySQLManager manager = new MySQLManager(); //Need to give actual connection string
+	MySQLManager manager; 
 	
-	public ServerMain(Socket clientSocket, int threadIndex, int socketIndex) {
+	public ServerMain(Socket clientSocket, int threadIndex, int socketIndex) throws ClassNotFoundException {
 		this.threadIndex = threadIndex;
 		this.socketIndex = socketIndex;
 		try {
@@ -31,8 +31,13 @@ public class ServerMain extends Thread{
 			dos = new DataOutputStream(os);
 			is = clientSocket.getInputStream();
 			dis = new DataInputStream(is);
+			Class.forName("com.mysql.jdbc.Driver");
+			manager = new MySQLManager("jdbc:mysql://localhost:3306/RestaurantDatabase", "root");
 		} catch (IOException e) {
 			System.err.println("Failed to construct new thread");
+			e.printStackTrace();
+		} catch (SQLException e) {
+			System.err.println("Failed to connect to database");
 			e.printStackTrace();
 		}
 		
@@ -65,6 +70,7 @@ public class ServerMain extends Thread{
 			os.close();
 			dis.close();
 			is.close();
+			manager.close();
 			clientSocket.close();
 			synchronized(threadPool) {
 				sockets.remove(socketIndex);
@@ -72,6 +78,9 @@ public class ServerMain extends Thread{
 			}
 		} catch (IOException e) {
 			System.err.println("Failed to close streams");
+			e.printStackTrace();
+		} catch (SQLException e) {
+			System.err.println("Failed to close MySQLManager");
 			e.printStackTrace();
 		}
 	}
@@ -90,27 +99,25 @@ public class ServerMain extends Thread{
 		try {
 			int code = dis.readInt();
 			if(code == 10) {	//Only read new data
-				 String query = "SELECT * FROM Orders WHERE read=0";
-				 ResultSet result = manager.query(query);
-				 ResultSetMetaData data = result.getMetaData();
-				 int numCol = data.getColumnCount();
+				 String query = "SELECT * FROM Orders WHERE Read_Flag = 0 AND TotalPrice IS NOT NULL";
+				 ArrayList<String[]> result = manager.query(query);
+				 int numCol = result.get(0).length;
 				 dos.writeInt(numCol);
-				 while(result.next()) {
+				 for(int j=0; j<result.size(); j++) {
 					 for(int i=0; i<numCol; i++) {
-						 dos.writeUTF(result.getString(i));
+						 dos.writeUTF(result.get(j)[i]);
 					 }
 				 }
 				 dos.writeUTF("done");	//Done writing data
 				 return 0;
 			} else if(code == 20) {	//Read all data
 				 String query = "SELECT * FROM Orders";
-				 ResultSet result = manager.query(query);
-				 ResultSetMetaData data = result.getMetaData();
-				 int numCol = data.getColumnCount();
+				 ArrayList<String[]> result = manager.query(query);
+				 int numCol = result.get(0).length;
 				 dos.writeInt(numCol);
-				 while(result.next()) {
+				 for(int j=0; j<result.size(); j++) {
 					 for(int i=0; i<numCol; i++) {
-						 dos.writeUTF(result.getString(i));
+						 dos.writeUTF(result.get(j)[i]);
 					 }
 				 }
 				 dos.writeUTF("done");	//Done writing data
@@ -121,14 +128,13 @@ public class ServerMain extends Thread{
 				manager.update(update);
 				return 0;
 			} else if(code == 40) {	//Get only old orders
-				String query = "SELECT * FROM Orders WHERE read = 1";
-				 ResultSet result = manager.query(query);
-				 ResultSetMetaData data = result.getMetaData();
-				 int numCol = data.getColumnCount();
+				String query = "SELECT * FROM Orders WHERE Read_Flag = 1 AND TotalPrice IS NOT NULL";
+				ArrayList<String[]> result = manager.query(query);
+				 int numCol = result.get(0).length;
 				 dos.writeInt(numCol);
-				 while(result.next()) {
+				 for(int j=0; j<result.size(); j++) {
 					 for(int i=0; i<numCol; i++) {
-						 dos.writeUTF(result.getString(i));
+						 dos.writeUTF(result.get(j)[i]);
 					 }
 				 }
 				 dos.writeUTF("done");	//Done writing data
@@ -150,17 +156,18 @@ public class ServerMain extends Thread{
 		int code = 0;
 		try {
 			code = dis.readInt();
+			System.out.println(code);
 		} catch (IOException e1) {
 			System.err.println("Unable to communicate with mobile device");
 			e1.printStackTrace();
 		}
 		if(code == 10) {	//read order from mobile device
 			boolean done = false;
+			ArrayList<String> values = new ArrayList<String>();
 			while(!done) {
 				try {
 					String temp = dis.readUTF();
-					ArrayList<String> values = new ArrayList<String>();
-					if(temp != "done") {
+					if(!temp.equals( "done")) {
 						values.add(temp);
 					} else {
 						String update = "";
@@ -169,10 +176,11 @@ public class ServerMain extends Thread{
 							if(i != values.size()-1) 
 								update += "'" + values.get(i) + "',";
 							else 
-								update += "'" + values.get(i) + "'";
+								update += "'" + values.get(i) + "',";
 						}
-						update += ")";
-						manager.update(update);
+						update += "0)";
+						int status = manager.update(update);
+						System.out.println(status);
 						done = true;
 						return 0;
 					}
@@ -189,24 +197,27 @@ public class ServerMain extends Thread{
 			}
 		} else if(code == 20) {	//send mobile device special offers
 			try {
-				String query = "SELECT offers FROM special_offers WHERE valid=0";
-				ResultSet rs = manager.query(query);
-				while(rs.next()) {
-					dos.writeUTF(rs.getString("offers"));
+				String query = "SELECT offers FROM special_offers WHERE valid=0 AND TotalPrice IS NOT NULL";
+				ArrayList<String[]> rs = manager.query(query);
+				for(int i=0; i<rs.size(); i++) {
+					dos.writeUTF(rs.get(i)[0]);
 				}
 				dos.writeUTF("done");
+				return 0;
 			} catch(SQLException e) {
 				System.err.println("Failed to query database");
 				e.printStackTrace();
+				return -10;
 			} catch (IOException e) {
 				System.err.println("Failed to write to mobile client");
 				e.printStackTrace();
+				return -20;
 			}
 		}
 		return -1;
 	}
 	
-	public static void main(String args[]) {
+	public static void main(String args[]) throws ClassNotFoundException {
 		try {
 			@SuppressWarnings("resource")
 			ServerSocket serverSocket = new ServerSocket(listenPort);
@@ -223,7 +234,7 @@ public class ServerMain extends Thread{
 			System.err.println("Server failed");
 			e.printStackTrace();
 		}
-	
+
 	}
 	
 }

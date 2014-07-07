@@ -69,10 +69,7 @@ public class GUI extends JFrame {
 		JList<String> jList = initJList(file);
 		initScrollPane(jList);		
 		initDeleteButton();
-		
 		initMenu();
-		
-		
 	}
 
 	protected void initMenu() {
@@ -110,8 +107,21 @@ public class GUI extends JFrame {
 			public void actionPerformed(ActionEvent e) {
 				specialOffer = (String)JOptionPane.showInputDialog(GUI.this, "Add New Special Offer");
 				int status = backEnd.sendOffer(specialOffer);
-				//TODO add dialogue box upon failure. A negative value indicates failure
+				if(status<0)
+				    JOptionPane.showMessageDialog(GUI.this, "Could not create special offer","ERROR", JOptionPane.ERROR_MESSAGE);
+				else{
+                    JOptionPane.showMessageDialog(GUI.this, "Successfully created special offer","SUCCESS", JOptionPane.INFORMATION_MESSAGE);
+				}
 			}		
+		});
+		JMenuItem menu = new JMenuItem("Edit Menu");
+		menu.addActionListener(new ActionListener(){
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                
+            }
+		    
 		});
 		options.add(pastOrders);
 		options.add(offers);
@@ -141,12 +151,12 @@ public class GUI extends JFrame {
 
 	private JList<String> initJList(File file) throws IOException {
 		DefaultListModel<String> model = new DefaultListModel<String>();
-		for(String order : getOrders(backEnd.update(10))){	//TODO Determine whether to update or get all orders
-			model.addElement(order);						//10 for new, 20 for all
-		}
-//		for(String order : (readFile(file))){
-//			model.addElement(order);
+//		for(String order : getOrders(backEnd.update(10))){	//TODO Determine whether to update or get all orders
+//			model.addElement(order);						//10 for new, 20 for all
 //		}
+		for(String order : (readFile(file))){
+			model.addElement(order);
+		}
 		jList = new JList<>(model);
 		
 		jList.setCellRenderer(new JlistRenderer());

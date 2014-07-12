@@ -225,8 +225,8 @@ public class GUI extends JFrame {
         ArrayList<String> result = new ArrayList<String>();
         for(int i=0; i<orders.size(); i++) {
             String temp = "";
-            for(int j=0; j<orders.get(i).length; j++) {
-                if(j==orders.get(i).length-1){
+            for(int j=0; j<orders.get(i).length-1; j++) {
+                if(j==orders.get(i).length-2){
                     if(orders.get(i)[j].equals("0"))
                         temp+="Take Out";
                     else{temp+="Delivery";}

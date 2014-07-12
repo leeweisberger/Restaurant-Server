@@ -113,7 +113,7 @@ public class RestaurantBackEnd {
 			String temp = dis.readUTF();
 			while(!(temp.equals("done"))) {
 				result.add(new String[numCol]);
-				for(int i=0; i<numCol-1; i++) {	//Don't read in read_flag
+				for(int i=0; i<numCol; i++) {	//Don't read in read_flag
 					if(i != 0)
 						result.get(result.size()-1)[i] = dis.readUTF();
 					else

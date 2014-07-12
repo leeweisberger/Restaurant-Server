@@ -143,6 +143,11 @@ public class ServerMain extends Thread{
 				
 			} else if(code == 60) { //Send menu to restaurant
 				
+			} else if(code == 70) { //Flip read_flag for order
+				int index = dis.readInt();
+				String update = "UPDATE Orders SET read_flag=1 WHERE PrimaryIndex=" + index;
+				manager.update(update);
+				return 0;
 			}
 		} catch(IOException e) {
 			System.err.println("Could not read code from resuraunt");

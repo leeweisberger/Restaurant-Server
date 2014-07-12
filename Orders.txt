@@ -1,0 +1,2 @@
+Pepperoni Pizza;Small:12 Medium:15 Large:18;Pizza
+Lasagna;18;Pasta

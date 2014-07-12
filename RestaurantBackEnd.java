@@ -52,7 +52,7 @@ public class RestaurantBackEnd {
 			this.address = InetAddress.getByName(address);
 			this.port = port;
 			socket = new Socket();
-			socket.connect(new InetSocketAddress("134.193.112.95", 12345), 1000);
+			socket.connect(new InetSocketAddress("134.193.112.95", 12345), 10000);
 			getStreams();
 			int status = connectToServer();
 			if(status == -1) 

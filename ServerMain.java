@@ -139,6 +139,10 @@ public class ServerMain extends Thread{
 				 }
 				 dos.writeUTF("done");	//Done writing data
 				 return 0;
+			} else if(code == 50) { //Send menu to server
+				
+			} else if(code == 60) { //Send menu to restaurant
+				
 			}
 		} catch(IOException e) {
 			System.err.println("Could not read code from resuraunt");
